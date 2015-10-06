@@ -276,7 +276,7 @@ public class DualCache<T> {
      * @param key    is the key of the object.
      * @param object is the object to put in cache.
      */
-    public void put(String key, T object) {
+    public synchronized void put(String key, T object) {
         String jsonStringObject = null;
         if (mRAMMode.equals(DualCacheRAMMode.ENABLE_WITH_REFERENCE)) {
             mRamCacheLru.put(key, object);
@@ -325,7 +325,7 @@ public class DualCache<T> {
      * @param key is the key of the object.
      * @return the object of the corresponding key from the cache. In no object is available, return null.
      */
-    public T get(String key) {
+    public synchronized T get(String key) {
 
         Object ramResult = null;
         String diskResult = null;
