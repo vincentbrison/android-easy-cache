@@ -164,7 +164,7 @@ public class CustomLruCache<K, V> {
      */
     public final V put(K key, V value) {
         if (key == null || value == null) {
-            throw new NullPointerException("key == null || value == null");
+            throw new NullPointerException("key == null || value == null. This could happen even if you supplied a non-null object, but it couldn't be serialised.");
         }
 
         V previous;
