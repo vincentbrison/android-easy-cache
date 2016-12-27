@@ -6,10 +6,10 @@ package com.vincentbrison.openlibraries.android.dualcache;
 
 public class VolatileSizeOf<T> implements SizeOf<VolatileCacheEntry<T>> {
 
-    private SizeOf<T> sizeOf;
+    private SizeOf<T> tSizeOf;
 
     public VolatileSizeOf(SizeOf<T> sizeOf) {
-        this.sizeOf = sizeOf;
+        this.tSizeOf = sizeOf;
     }
 
     /**
@@ -20,6 +20,6 @@ public class VolatileSizeOf<T> implements SizeOf<VolatileCacheEntry<T>> {
      */
     @Override
     public int sizeOf(VolatileCacheEntry<T> object) {
-        return sizeOf.sizeOf(object.getItem()) + 8; // We suppose long = 8 bytes
+        return tSizeOf.sizeOf(object.getItem()) + 8; // We suppose long = 8 bytes
     }
 }

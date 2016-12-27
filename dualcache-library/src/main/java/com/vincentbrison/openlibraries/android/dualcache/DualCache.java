@@ -337,7 +337,6 @@ public class DualCache<T> {
      * @return the object of the corresponding key from the cache. In no object is available,
      * return null.
      */
-
     public T get(String key) {
 
         Object ramResult = null;

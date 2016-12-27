@@ -34,6 +34,6 @@ class VolatileCacheSerializer<T> implements CacheSerializer<VolatileCacheEntry<T
      */
     @Override
     public String toString(VolatileCacheEntry<T> object) {
-        return serializer.toString(object.getItem()) + TIMESTAMP_KEY + String.valueOf(object.getTimestamp().getTime());
+        return serializer.toString(object.getItem()) + TIMESTAMP_KEY + object.getTimestamp().getTime();
     }
 }
