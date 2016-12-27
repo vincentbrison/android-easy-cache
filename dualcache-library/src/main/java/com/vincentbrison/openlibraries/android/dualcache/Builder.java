@@ -28,6 +28,7 @@ public class Builder<T> {
     private DualCacheDiskMode diskMode;
     private CacheSerializer<T> diskSerializer;
     private File diskFolder;
+    private Long persistenceTime = null;
 
     /**
      * Start the building of the cache.
@@ -77,7 +78,8 @@ public class Builder<T> {
             diskMode,
             diskSerializer,
             maxDiskSizeBytes,
-            diskFolder
+                diskFolder,
+                persistenceTime
         );
 
         boolean isRamDisable = cache.getRAMMode().equals(DualCacheRamMode.DISABLE);
@@ -178,6 +180,17 @@ public class Builder<T> {
         this.diskMode = DualCacheDiskMode.ENABLE_WITH_SPECIFIC_SERIALIZER;
         this.maxDiskSizeBytes = maxDiskSizeBytes;
         this.diskSerializer = serializer;
+        return this;
+    }
+
+    /**
+     * Set a persistence time for cache entries
+     *
+     * @param timeInMillis time a cache entry can persist
+     * @return the builder
+     */
+    public Builder<T> setPersistenceTime(long timeInMillis) {
+        this.persistenceTime = timeInMillis;
         return this;
     }
 
