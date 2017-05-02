@@ -6,11 +6,14 @@ import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
 import com.vincentbrison.openlibraries.android.dualcache.CacheSerializer;
+import com.vincentbrison.openlibraries.android.dualcache.DiskCacheSerializer;
 import com.vincentbrison.openlibraries.android.dualcache.DualCache;
 import com.vincentbrison.openlibraries.android.dualcache.DualCacheDiskMode;
 import com.vincentbrison.openlibraries.android.dualcache.DualCacheRamMode;
+import com.vincentbrison.openlibraries.android.dualcache.JsonDiskSerializer;
 import com.vincentbrison.openlibraries.android.dualcache.JsonSerializer;
 import com.vincentbrison.openlibraries.android.dualcache.SizeOf;
+import com.vincentbrison.openlibraries.android.dualcache.IOUtil;
 import com.vincentbrison.openlibraries.android.dualcache.lib.testobjects.AbstractVehicule;
 import com.vincentbrison.openlibraries.android.dualcache.lib.testobjects.CoolBike;
 import com.vincentbrison.openlibraries.android.dualcache.lib.testobjects.CoolCar;
@@ -20,12 +23,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 @RunWith(AndroidJUnit4.class)
 public abstract class DualCacheTest {
@@ -36,6 +43,7 @@ public abstract class DualCacheTest {
     protected static final int TEST_APP_VERSION = 0;
     protected DualCache<AbstractVehicule> cache;
     protected CacheSerializer<AbstractVehicule> defaultCacheSerializer;
+    protected JsonDiskSerializer<AbstractVehicule> defaultDiskCacheSerializer;
     private Context context;
 
     protected Context getContext() {
@@ -45,6 +53,7 @@ public abstract class DualCacheTest {
     @Before
     public void setUp() throws Exception {
         defaultCacheSerializer = new JsonSerializer<>(AbstractVehicule.class);
+        defaultDiskCacheSerializer = new JsonDiskSerializer<>(AbstractVehicule.class);
         context = InstrumentationRegistry.getTargetContext();
     }
 
@@ -252,6 +261,45 @@ public abstract class DualCacheTest {
         @Override
         public String toString(AbstractVehicule object) {
             return object.getClass().getSimpleName();
+        }
+    }
+
+    public static class DiskSerializerForTesting implements DiskCacheSerializer<AbstractVehicule> {
+        private static final Charset CHARSET = Charset.forName("UTF-8");
+
+        @Override
+        public AbstractVehicule fromStream(InputStream data) throws IOException {
+            char[] buffer = new char[1024];
+            InputStreamReader reader = new InputStreamReader(data, CHARSET);
+            StringBuilder builder = new StringBuilder();
+
+            try {
+                int numRead;
+                while ((numRead = reader.read(buffer)) != -1) {
+                    builder.append(buffer, 0, numRead);
+                }
+                final String string = builder.toString();
+
+                if (string.equals(CoolBike.class.getSimpleName())) {
+                    return new CoolBike();
+                } else if (string.equals(CoolCar.class.getSimpleName())) {
+                    return new CoolCar();
+                } else {
+                    return null;
+                }
+            } finally {
+                IOUtil.closeQuietly(reader);
+            }
+        }
+
+        @Override
+        public void writeToStream(OutputStream out, AbstractVehicule object) throws IOException {
+            OutputStreamWriter writer = new OutputStreamWriter(out, CHARSET);
+            try {
+                writer.write(object.getClass().getSimpleName());
+            } finally {
+                IOUtil.closeQuietly(writer);
+            }
         }
     }
 

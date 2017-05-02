@@ -20,6 +20,8 @@ import com.jakewharton.disklrucache.DiskLruCache;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * This class intent to provide a very easy to use, reliable, highly configurable caching library
@@ -38,7 +40,7 @@ public class DualCache<T> {
     private final int appVersion;
     private final DualCacheRamMode ramMode;
     private final DualCacheDiskMode diskMode;
-    private final CacheSerializer<T> diskSerializer;
+    private final DiskCacheSerializer<T> diskSerializer;
     private final CacheSerializer<T> ramSerializer;
     private final DualCacheLock dualCacheLock = new DualCacheLock();
     private final Logger logger;
@@ -52,7 +54,7 @@ public class DualCache<T> {
         int maxRamSizeBytes,
         SizeOf<T> sizeOf,
         DualCacheDiskMode diskMode,
-        CacheSerializer<T> diskSerializer,
+        DiskCacheSerializer<T> diskSerializer,
         int maxDiskSizeBytes,
         File diskFolder
     ) {
@@ -154,6 +156,7 @@ public class DualCache<T> {
         }
 
         if (diskMode.equals(DualCacheDiskMode.ENABLE_WITH_SPECIFIC_SERIALIZER)) {
+            OutputStream out = null;
             try {
                 dualCacheLock.lockDiskEntryWrite(key);
                 DiskLruCache.Editor editor = diskLruCache.edit(key);
@@ -161,13 +164,15 @@ public class DualCache<T> {
                     // Optimization if using same serializer
                     editor.set(0, ramSerialized);
                 } else {
-                    editor.set(0, diskSerializer.toString(object));
+                    out = editor.newOutputStream(0);
+                    diskSerializer.writeToStream(out, object);
                 }
                 editor.commit();
             } catch (IOException e) {
                 logger.logError(e);
             } finally {
                 dualCacheLock.unLockDiskEntryWrite(key);
+                IOUtil.closeQuietly(out);
             }
         }
     }
@@ -183,7 +188,6 @@ public class DualCache<T> {
     public T get(String key) {
 
         Object ramResult = null;
-        String diskResult = null;
         DiskLruCache.Snapshot snapshotObject = null;
 
         // Try to get the object from RAM.
@@ -194,6 +198,8 @@ public class DualCache<T> {
         }
 
         if (ramResult == null) {
+            T objectFromDisk = null;
+
             // Try to get the cached object from disk.
             loggerHelper.logEntryForKeyIsNotInRam(key);
             if (diskMode.equals(DualCacheDiskMode.ENABLE_WITH_SPECIFIC_SERIALIZER)) {
@@ -208,35 +214,34 @@ public class DualCache<T> {
 
                 if (snapshotObject != null) {
                     loggerHelper.logEntryForKeyIsOnDisk(key);
+                    InputStream diskResult = snapshotObject.getInputStream(0);
                     try {
-                        diskResult = snapshotObject.getString(0);
+                        objectFromDisk = diskSerializer.fromStream(diskResult);
                     } catch (IOException e) {
                         logger.logError(e);
+                    } finally {
+                        IOUtil.closeQuietly(diskResult);
                     }
                 } else {
                     loggerHelper.logEntryForKeyIsNotOnDisk(key);
                 }
             }
 
-            T objectFromStringDisk = null;
-
-            if (diskResult != null) {
+            if (objectFromDisk != null) {
                 // Load object, no need to check disk configuration since diskresult != null.
-                objectFromStringDisk = diskSerializer.fromString(diskResult);
-
                 // Refresh object in ram.
                 if (ramMode.equals(DualCacheRamMode.ENABLE_WITH_REFERENCE)) {
                     if (diskMode.equals(DualCacheDiskMode.ENABLE_WITH_SPECIFIC_SERIALIZER)) {
-                        ramCacheLru.put(key, objectFromStringDisk);
+                        ramCacheLru.put(key, objectFromDisk);
                     }
                 } else if (ramMode.equals(DualCacheRamMode.ENABLE_WITH_SPECIFIC_SERIALIZER)) {
-                    if (diskSerializer == ramSerializer) {
-                        ramCacheLru.put(key, diskResult);
-                    } else {
-                        ramCacheLru.put(key, ramSerializer.toString(objectFromStringDisk));
-                    }
+//                    if (diskSerializer == ramSerializer) {
+//                        ramCacheLru.put(key, objectFromDisk);
+//                    } else {
+                    ramCacheLru.put(key, ramSerializer.toString(objectFromDisk));
+//                    }
                 }
-                return objectFromStringDisk;
+                return objectFromDisk;
             }
         } else {
             loggerHelper.logEntryForKeyIsInRam(key);
