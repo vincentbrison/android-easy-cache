@@ -26,7 +26,7 @@ public class Builder<T> {
     private SizeOf<T> sizeOf;
     private int maxDiskSizeBytes;
     private DualCacheDiskMode diskMode;
-    private CacheSerializer<T> diskSerializer;
+    private DiskCacheSerializer<T> diskSerializer;
     private File diskFolder;
 
     /**
@@ -154,7 +154,7 @@ public class Builder<T> {
     public Builder<T> useSerializerInDisk(
         int maxDiskSizeBytes,
         boolean usePrivateFiles,
-        CacheSerializer<T> serializer,
+        DiskCacheSerializer<T> serializer,
         Context context
     ) {
         File folder = getDefaultDiskCacheFolder(usePrivateFiles, context);
@@ -172,7 +172,7 @@ public class Builder<T> {
      * @return the builder.
      */
     public Builder<T> useSerializerInDisk(
-        int maxDiskSizeBytes, File diskCacheFolder, CacheSerializer<T> serializer
+        int maxDiskSizeBytes, File diskCacheFolder, DiskCacheSerializer<T> serializer
     ) {
         this.diskFolder = diskCacheFolder;
         this.diskMode = DualCacheDiskMode.ENABLE_WITH_SPECIFIC_SERIALIZER;

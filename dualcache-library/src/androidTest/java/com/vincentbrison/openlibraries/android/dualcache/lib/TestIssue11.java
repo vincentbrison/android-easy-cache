@@ -6,7 +6,9 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.vincentbrison.openlibraries.android.dualcache.Builder;
 import com.vincentbrison.openlibraries.android.dualcache.CacheSerializer;
+import com.vincentbrison.openlibraries.android.dualcache.DiskCacheSerializer;
 import com.vincentbrison.openlibraries.android.dualcache.DualCache;
+import com.vincentbrison.openlibraries.android.dualcache.JsonDiskSerializer;
 import com.vincentbrison.openlibraries.android.dualcache.JsonSerializer;
 
 import org.junit.After;
@@ -18,7 +20,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  * Test issue 11.
@@ -36,10 +38,11 @@ public class TestIssue11 {
         Context context = InstrumentationRegistry.getTargetContext();
         File cacheDir = new File(context.getCacheDir(), CACHE_NAME);
         CacheSerializer<String> jsonSerializer = new JsonSerializer<>(String.class);
+        DiskCacheSerializer<String> jsonDiskSerializer = new JsonDiskSerializer<>(String.class);
         mCache = new Builder<String>(CACHE_NAME, 0)
             .enableLog()
             .useSerializerInRam(CACHE_RAM_ENTRIES, jsonSerializer)
-            .useSerializerInDisk(CACHE_SIZE, cacheDir, jsonSerializer)
+            .useSerializerInDisk(CACHE_SIZE, cacheDir, jsonDiskSerializer)
             .build();
     }
 

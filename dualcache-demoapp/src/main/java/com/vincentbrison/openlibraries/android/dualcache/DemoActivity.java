@@ -67,11 +67,12 @@ public class DemoActivity extends Activity {
         mRamCacheSize = getIntent().getIntExtra(EXTRA_RAM_CACHE_SIZE, 50);
 
         CacheSerializer<String> jsonSerializer = new JsonSerializer<>(String.class);
+        DiskCacheSerializer<String> jsonDiskSerializer = new JsonDiskSerializer<>(String.class);
 
         mCache = new Builder<String>(mCacheId, 1)
             .enableLog()
             .useSerializerInRam(mRamCacheSize, jsonSerializer)
-            .useSerializerInDisk(mDiskCacheSize, true, jsonSerializer, getApplicationContext())
+            .useSerializerInDisk(mDiskCacheSize, true, jsonDiskSerializer, getApplicationContext())
             .build();
 
         mHandler = new Handler();

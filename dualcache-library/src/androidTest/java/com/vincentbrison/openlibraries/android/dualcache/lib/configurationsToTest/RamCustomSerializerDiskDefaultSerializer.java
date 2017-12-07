@@ -12,7 +12,7 @@ public class RamCustomSerializerDiskDefaultSerializer extends DualCacheTest {
         cache = new Builder<AbstractVehicule>(CACHE_NAME, TEST_APP_VERSION)
             .enableLog()
             .useSerializerInRam(RAM_MAX_SIZE, new SerializerForTesting())
-            .useSerializerInDisk(DISK_MAX_SIZE, true, defaultCacheSerializer, getContext())
+            .useSerializerInDisk(DISK_MAX_SIZE, true, defaultDiskCacheSerializer, getContext())
             .build();
     }
 }

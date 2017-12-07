@@ -69,14 +69,14 @@ afterEvaluate { project ->
     }
 
     signing {
-        allprojects {
-            ext."signing.password" = safePwd("keyPwd")
-            ext."signing.keyId" = "D376F8F6"
-            //ext."signing.secretKeyRingFile" = "C:/Users/Brize/AppData/Roaming/gnupg/secring.gpg"
-            ext."signing.secretKeyRingFile" = "/Users/vincentbrison/.gnupg/secring.gpg"
-        }
-        required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
-        sign configurations.archives
+//        allprojects {
+//            ext."signing.password" = safePwd("keyPwd")
+//            ext."signing.keyId" = "D376F8F6"
+//            //ext."signing.secretKeyRingFile" = "C:/Users/Brize/AppData/Roaming/gnupg/secring.gpg"
+//            ext."signing.secretKeyRingFile" = "/Users/vincentbrison/.gnupg/secring.gpg"
+//        }
+//        required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
+//        sign configurations.archives
     }
 
     task javadocsJar(type: Jar) {

@@ -15,7 +15,7 @@ public class NoRamDiskCustomSerializer extends DualCacheTest {
             .useSerializerInDisk(
                 DISK_MAX_SIZE,
                 true,
-                new DualCacheTest.SerializerForTesting(),
+                new DualCacheTest.DiskSerializerForTesting(),
                 getContext())
             .build();
     }
