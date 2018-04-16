@@ -165,7 +165,7 @@ public class DualCache<T> implements Closeable {
                     editor.set(0, diskSerializer.toString(object));
                 }
                 editor.commit();
-            } catch (IOException e) {
+            } catch (IOException | NullPointerException e) {
                 logger.logError(e);
             } finally {
                 dualCacheLock.unLockDiskEntryWrite(key);
